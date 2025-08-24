@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: springboot-notes-app
+
+  data:
+    mongodb:
+      uri: ${MONGODB_URI}
+
+  security:
+    user:
+      name: user
+      password: user123
+
+  jmx:
+    enabled: false
+
