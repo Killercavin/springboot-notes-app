@@ -24,4 +24,10 @@ class NoteController(private val noteService: NoteService) {
     fun getNotes(): List<NoteResponse> {
         return noteService.getNotes()
     }
+
+    @GetMapping("/id/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    fun noteById(@Valid @PathVariable id: String): NoteResponse {
+        return noteService.noteById(id)
+    }
 }

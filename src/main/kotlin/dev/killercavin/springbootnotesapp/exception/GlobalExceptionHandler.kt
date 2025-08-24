@@ -6,8 +6,10 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.web.bind.MethodArgumentNotValidException
+import org.springframework.web.bind.MissingPathVariableException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
 import java.time.Instant
 
 data class NoteError(
@@ -22,11 +24,11 @@ class GlobalExceptionHandler {
 
     // duplicate note title handler
     @ExceptionHandler(DuplicateNoteTitleException::class)
-    fun handleDuplicateTitle(): ResponseEntity<NoteError> {
+    fun handleDuplicateTitle(e: DuplicateNoteTitleException): ResponseEntity<NoteError> {
         val noteError = NoteError(
             status = HttpStatus.CONFLICT.value(),
             error = HttpStatus.CONFLICT.reasonPhrase,
-            message = ""
+            message = e.message
         )
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(noteError)
@@ -70,18 +72,18 @@ class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(NoteNotFoundException::class)
-    fun handleNoteNotFound(): ResponseEntity<NoteError> {
+    fun handleNoteNotFound(e: NoteNotFoundException): ResponseEntity<NoteError> {
         val noteError = NoteError(
             status = HttpStatus.NOT_FOUND.value(),
             error = HttpStatus.NOT_FOUND.reasonPhrase,
-            message = ""
+            message = e.message
         )
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(noteError)
     }
 
     // handle all errors
-    @ExceptionHandler(Exception::class)
+    /*@ExceptionHandler(Exception::class)
     fun handleAll(): ResponseEntity<NoteError> {
         val noteError = NoteError(
             status = HttpStatus.INTERNAL_SERVER_ERROR.value(),
@@ -90,6 +92,36 @@ class GlobalExceptionHandler {
         )
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(noteError)
+    }*/
+
+    @ExceptionHandler(MissingPathVariableException::class)
+    fun handleMissingPathVar(e: MissingPathVariableException): ResponseEntity<NoteError> {
+        val noteError = NoteError(
+            status = HttpStatus.BAD_REQUEST.value(),
+            error = HttpStatus.BAD_REQUEST.reasonPhrase,
+            message = "Missing path variable: ${e.variableName}"
+        )
+        return ResponseEntity.badRequest().body(noteError)
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException::class)
+    fun handleTypeMismatch(e: MethodArgumentTypeMismatchException): ResponseEntity<NoteError> {
+        val noteError = NoteError(
+            status = HttpStatus.BAD_REQUEST.value(),
+            error = HttpStatus.BAD_REQUEST.reasonPhrase,
+            message = "Invalid type for '${e.name}': expected ${e.requiredType?.simpleName}"
+        )
+        return ResponseEntity.badRequest().body(noteError)
+    }
+
+    @ExceptionHandler(InvalidObjectIdException::class)
+    fun handleInvalidObjectId(e: InvalidObjectIdException): ResponseEntity<NoteError> {
+        val noteError = NoteError(
+            status = HttpStatus.BAD_REQUEST.value(),
+            error = HttpStatus.BAD_REQUEST.reasonPhrase,
+            message = e.message
+        )
+        return ResponseEntity.badRequest().body(noteError)
     }
 }
 
@@ -97,3 +129,5 @@ class GlobalExceptionHandler {
 class DuplicateNoteTitleException(message: String): RuntimeException(message)
 
 class NoteNotFoundException(message: String): RuntimeException(message)
+
+class InvalidObjectIdException(message: String): RuntimeException(message)
