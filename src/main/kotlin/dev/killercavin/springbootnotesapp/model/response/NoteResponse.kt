@@ -12,7 +12,7 @@ data class NoteResponse(
     val updatedAt: Instant = Instant.now()
 )
 
-fun Note.toResponseDTO(): NoteResponse = NoteResponse(
+fun Note.toNoteResponseDTO(): NoteResponse = NoteResponse(
     id = this.id,
     title = this.title,
     content = this.content,

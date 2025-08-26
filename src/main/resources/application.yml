@@ -11,6 +11,8 @@ spring:
       name: user
       password: user123
 
+    jwt:
+      secret: ${JWT_SECRET}
+
   jmx:
     enabled: false
-
